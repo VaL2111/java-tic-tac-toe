@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
@@ -10,6 +11,11 @@ public class Main {
     private static String CELL_STATE_EMPTY = " ";
     private static String CELL_STATE_X = "X";
     private static String CELL_STATE_O = "O";
+
+    private static String GAME_STATE_X_WIN = "Ви перемогли!";
+    private static String GAME_STATE_O_WIN = "Ви програли.";
+    private static String GAME_STATE_DRAW = "Нічия!";
+    private static String GAME_STATE_NOT_FINISHED = "Гра ще не закінчена!";
 
     private static Scanner scanner = new Scanner(System.in);
     private static Random random = new Random();
@@ -24,13 +30,33 @@ public class Main {
     }
 
     public static void startGameLoop(String[][] board) {
-        makePlayerTurn(board);
-        printBoard(board);
+        while (true) {
+            makePlayerTurn(board);
+            printBoard(board);
 
-        System.out.println();
+            System.out.println();
 
-        makeBotTurn(board);
-        printBoard(board);
+            if (isGameOver(board)) {
+                break;
+            }
+
+            makeBotTurn(board);
+            printBoard(board);
+
+            if (isGameOver(board)) {
+                break;
+            }
+        }
+    }
+
+    public static boolean isGameOver(String[][] board) {
+        String gameState = checkGameState(board);
+        if (!Objects.equals(gameState, GAME_STATE_NOT_FINISHED)) {
+            System.out.println(gameState);
+            return true;
+        }
+
+        return false;
     }
 
     public static void makePlayerTurn(String[][] board) {
@@ -44,15 +70,68 @@ public class Main {
         board[coordinates[0]][coordinates[1]] = CELL_STATE_O;
     }
 
+    public static String checkGameState(String[][] board) {
+        ArrayList<Byte> sums = new ArrayList<>();
+
+        byte firstDiagonalSum = 0;
+        byte secondDiagonalSum = 0;
+        for (int row = 0; row < ROW_COUNT; row++) {
+            byte rowSum = 0;
+            byte colSum = 0;
+            for (int col = 0; col < COL_COUNT; col++) {
+                rowSum += calculateNumValue(board[row][col]);
+                colSum += calculateNumValue(board[col][row]);
+            }
+            sums.add(rowSum);
+            sums.add(colSum);
+
+            firstDiagonalSum += calculateNumValue(board[row][row]);
+            secondDiagonalSum += calculateNumValue((board[row][ROW_COUNT - 1 - row]));
+        }
+        sums.add(firstDiagonalSum);
+        sums.add(secondDiagonalSum);
+
+        if (sums.contains((byte) 3)) {
+            return GAME_STATE_X_WIN;
+        } else if (sums.contains((byte) -3)) {
+            return GAME_STATE_O_WIN;
+        } else if (areAllCellsTaken(board)) {
+            return GAME_STATE_DRAW;
+        } else {
+            return GAME_STATE_NOT_FINISHED;
+        }
+    }
+
+    private static byte calculateNumValue(String cellState) {
+        if (Objects.equals(cellState, CELL_STATE_X)) {
+            return 1;
+        } else if (Objects.equals(cellState, CELL_STATE_O)) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
+    public static boolean areAllCellsTaken(String[][] board) {
+        for (int row = 0; row < ROW_COUNT; row++) {
+            for (int col = 0; col < COL_COUNT; col++) {
+                if (Objects.equals(board[row][col], CELL_STATE_EMPTY)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public static int[] getRandomEmptyCellCoordinates(String[][] board) {
-        do {
+        while (true) {
             int row = random.nextInt(ROW_COUNT);
             int col = random.nextInt(COL_COUNT);
 
             if (Objects.equals(board[row][col], CELL_STATE_EMPTY)) {
                 return new int[]{row, col};
             }
-        } while (true);
+        }
     }
 
     public static String[][] createBoard() {
