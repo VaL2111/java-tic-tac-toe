@@ -25,9 +25,12 @@ public class Main {
 
     public static void startGameLoop(String[][] board) {
         makePlayerTurn(board);
-        makeBotTurn(board);
+        printBoard(board);
 
-        int a = 123;
+        System.out.println();
+
+        makeBotTurn(board);
+        printBoard(board);
     }
 
     public static void makePlayerTurn(String[][] board) {
@@ -36,6 +39,7 @@ public class Main {
     }
 
     public static void makeBotTurn(String[][] board) {
+        System.out.println("Хід бота:");
         int[] coordinates = getRandomEmptyCellCoordinates(board);
         board[coordinates[0]][coordinates[1]] = CELL_STATE_O;
     }
@@ -80,5 +84,18 @@ public class Main {
                 return new int[]{row, col};
             }
         } while (true);
+    }
+
+    public static void printBoard(String[][] board) {
+        System.out.println("---------");
+        for (int row = 0; row < ROW_COUNT; row++) {
+            StringBuilder line = new StringBuilder("| ");
+            for (int col = 0; col < COL_COUNT; col++) {
+                line.append(board[row][col]).append(" ");
+            }
+            line.append("|");
+            System.out.println(line);
+        }
+        System.out.println("---------");
     }
 }
